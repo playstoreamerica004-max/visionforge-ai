@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d19"><title>VisionForge AI — تحسين الصور والفيديو</title>
+<style>
+:root{color-scheme:dark;--bg:#090d19;--panel:#121a2c;--line:#293650;--cyan:#55e5ff;--purple:#8c6bff;--muted:#9aabc6}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#172b50 0,transparent 42%),var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#f4f7ff}
+main{max-width:850px;margin:auto;padding:22px 15px 50px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.4px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:grid;place-items:center;color:#08101e;font-size:22px}
+h1{font-size:clamp(27px,6vw,43px);line-height:1.15;margin:28px 0 10px}h1 span{color:var(--cyan)}p{color:var(--muted);line-height:1.7}.panel{background:#121a2ceF;border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:18px;box-shadow:0 14px 45px #0003}.tabs{display:flex;gap:8px}.tab,button,select{font:inherit;border-radius:12px;border:1px solid var(--line);padding:12px;background:#0d1424;color:#fff}.tab{flex:1}.tab.active,button.primary{background:linear-gradient(100deg,#087eaa,#6850da);border:0}.drop{border:1.5px dashed #45617d;border-radius:18px;text-align:center;padding:22px 12px;margin-top:14px}.drop input{max-width:100%;margin-top:12px}label{display:block;margin:14px 0 7px;color:#dce7fa;font-size:14px}select{width:100%}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}button{cursor:pointer;width:100%;margin-top:12px}button:disabled{opacity:.5}.hint{font-size:12px}.status{margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--cyan)}video{width:100%;max-height:330px;border-radius:14px;margin-top:12px;background:#000}.badge{font-size:12px;color:#a8f5d0;background:#16342f;padding:6px 9px;border-radius:20px}.small{font-size:12px;color:var(--muted)}a{color:var(--cyan)}@media(max-width:480px){.row{grid-template-columns:1fr}.panel{padding:14px}}
+</style>
+</head>
+<body><main>
+<div class="brand"><div class="logo">✦</div><div>VISIONFORGE <span style="color:var(--cyan)">AI</span><div class="small">VIDEO & PHOTO LAB</div></div><span class="badge">نسخة تجريبية</span></div>
+<h1>خلّي المحتوى ديالك<br><span>يبان بأفضل جودة</span></h1>
+<p>رفع فيديو أو صورة، أو سجّل بالكاميرا. عالج الملفات على السيرفر ديالك وحمّل النتيجة.</p>
+<section class="panel">
+<div class="tabs"><button class="tab active" id="videoTab" onclick="setKind('video')">🎬 فيديو</button><button class="tab" id="imageTab" onclick="setKind('image')">🖼️ صورة</button></div>
+<div class="drop"><div style="font-size:32px">⇧</div><b>اختار ملف من الهاتف</b><p class="small">الفيديو: MP4 / MOV / MKV / WebM — الصورة: JPG / PNG / WebP</p><input type="file" id="file" accept="video/*" onchange="previewFile()"></div>
+<div id="preview"></div>
+<div class="row"><div><label for="quality">الدقة المستهدفة للفيديو</label><select id="quality"><option value="720p">720p</option><option value="1080p" selected>1080p</option><option value="2k">2K</option><option value="4k">4K</option><option value="8k">8K</option><option value="16k">16K (ثقيل جداً)</option></select></div>
+<div><label for="mode">طريقة المعالجة</label><select id="mode"><option value="enhance">تحسين الحدة وتكبير الأبعاد</option><option value="denoise">تقليل التشويش + تكبير</option></select></div></div>
+<button id="processBtn" class="primary" onclick="processFile()">ابدأ المعالجة</button><div id="status" class="status"></div><div id="download"></div>
+</section>
+<section class="panel"><h3>📷 تصوير مباشر</h3><p class="small">الكاميرا كتحتاج إذن، وكتخدم عادة عبر HTTPS أو localhost.</p><div class="row"><button onclick="startCamera()">تشغيل الكاميرا</button><button onclick="stopCamera()">إيقاف الكاميرا</button></div><video id="cam" autoplay muted playsinline></video><div class="row"><button class="primary" onclick="recordStart()">● بدء التسجيل</button><button onclick="recordStop()">■ إنهاء التسجيل</button></div><a id="recordDownload"></a></section>
+<section class="panel"><h3>مهم قبل الاستعمال</h3><p class="small">رفع الدقة لا يسترجع دائماً تفاصيل حقيقية. الفيديو في هذه النسخة يُعالج بـFFmpeg، وليس بنموذج AI لإعادة بناء كل إطار. تحسين الصور بالـAI يتطلب تثبيت Real-ESRGAN على السيرفر. الملفات الكبيرة تحتاج مساحة ووقتاً واتصالاً مستقراً.</p></section>
+</main>
+<script>
+let kind='video',stream=null,recorder=null,chunks=[];
+function setKind(k){kind=k;document.getElementById('videoTab').classList.toggle('active',k==='video');document.getElementById('imageTab').classList.toggle('active',k==='image');document.getElementById('file').accept=k==='video'?'video/*':'image/*';document.getElementById('preview').innerHTML='';document.getElementById('file').value='';}
+function previewFile(){const f=document.getElementById('file').files[0];if(!f)return;const url=URL.createObjectURL(f);document.getElementById('preview').innerHTML=kind==='video'?`<video controls playsinline src="${url}"></video>`:`<img src="${url}" style="max-width:100%;max-height:280px;border-radius:14px;margin-top:12px">`;document.getElementById('status').textContent=`الملف: ${f.name} — ${(f.size/1024/1024).toFixed(1)} MB`;}
+async function processFile(){const f=document.getElementById('file').files[0];if(!f){alert('اختار الملف أولاً');return}if(f.size>2*1024**3){alert('الملف أكبر من 2GB');return}const btn=document.getElementById('processBtn'),s=document.getElementById('status');btn.disabled=true;s.textContent='كنرفع الملف وكنبدأ المعالجة… خليك فهاد الصفحة.';document.getElementById('download').innerHTML='';const d=new FormData();d.append('file',f);d.append('kind',kind);d.append('quality',document.getElementById('quality').value);d.append('mode',document.getElementById('mode').value);try{const r=await fetch('/api/process',{method:'POST',body:d});const data=await r.json();if(!r.ok)throw Error(data.detail||'فشلات العملية');s.textContent=data.note||'تمت المعالجة';document.getElementById('download').innerHTML=`<a href="${data.download_url}" download><button class="primary">تحميل الملف المحسّن</button></a>`;}catch(e){s.textContent='وقع مشكل: '+e.message+'\\nتأكد أن السيرفر شغال وأن حد الرفع مناسب.'}finally{btn.disabled=false}}
+async function startCamera(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:true});document.getElementById('cam').srcObject=stream;}catch(e){alert('ما قدرناش نشغلو الكاميرا: '+e.message+' — تأكد من HTTPS وإذن الكاميرا.')}}
+function stopCamera(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}document.getElementById('cam').srcObject=null}
+function recordStart(){if(!stream){alert('شغّل الكاميرا أولاً');return}chunks=[];let opts={};if(MediaRecorder.isTypeSupported('video/webm;codecs=vp9'))opts.mimeType='video/webm;codecs=vp9';recorder=new MediaRecorder(stream,opts);recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});const url=URL.createObjectURL(blob);const a=document.getElementById('recordDownload');a.href=url;a.download='visionforge-recording.webm';a.textContent='تحميل التسجيل';document.getElementById('file').files;};recorder.start();document.getElementById('status').textContent='التسجيل شغال…';}
+function recordStop(){if(recorder&&recorder.state!=='inactive')recorder.stop()}
+</script></body></html>
