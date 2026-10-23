@@ -7,4 +7,4 @@ COPY app.py index.html ./
 ENV WORK_DIR=/data/work MAX_UPLOAD_BYTES=2147483648
 RUN mkdir -p /data/work
 EXPOSE 7860
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860", "--timeout-keep-alive", "300"]
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-7860} --timeout-keep-alive 300"]
